@@ -5,20 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Summer Trip '26</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --sand:        #f2d9a2;       /* warm sandy amber — sky/beach */
-      --sand-light:  #faecd0;       /* lightest cloud/highlight */
-      --ocean:       #2a7d8c;       /* deep teal water */
-      --ocean-dark:  #1d5c68;       /* darker teal depth */
-      --terracotta:  #c95f38;       /* burnt orange palm/cliff */
-      --rust:        #a84228;       /* deeper rust accent */
-      --navy:        #2b3a4a;       /* dark navy topbar */
-      --cloud:       #fdf6e8;       /* soft cloud white */
-      --ink:         #1e2d38;       /* near-black text */
-      --mist:        #e8d9b8;       /* mid sand tone */
+      --sand:        #f2d9a2;
+      --sand-light:  #faecd0;
+      --ocean:       #2a7d8c;
+      --ocean-dark:  #1d5c68;
+      --terracotta:  #c95f38;
+      --navy:        #2b3a4a;
+      --cloud:       #fdf6e8;
+      --ink:         #1e2d38;
+      --mist:        #e8d9b8;
+      --drive-color: #2a7d8c;
+      --fly-color:   #c95f38;
     }
 
     html, body { height: 100%; font-family: 'Jost', sans-serif; background: var(--sand-light); color: var(--ink); }
@@ -37,28 +40,16 @@
       background: var(--navy);
       color: var(--cloud);
       overflow: hidden;
-      position: relative;
-    }
-
-    /* subtle wave texture at bottom of sidebar */
-    .sidebar::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 120px;
-      background: linear-gradient(to top, rgba(42,125,140,0.15), transparent);
-      pointer-events: none;
     }
 
     .sidebar-header {
-      padding: 32px 28px 22px;
+      padding: 28px 28px 20px;
       border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0;
       background: linear-gradient(135deg, rgba(42,125,140,0.2) 0%, transparent 60%);
     }
 
     .trip-eyebrow {
-      font-family: 'Jost', sans-serif;
       font-size: 10px;
       font-weight: 500;
       letter-spacing: 0.18em;
@@ -75,41 +66,75 @@
       color: var(--cloud);
     }
 
-    .trip-title em {
-      font-style: italic;
-      color: var(--sand);
-    }
+    .trip-title em { font-style: italic; color: var(--sand); }
 
     .trip-meta {
       margin-top: 10px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 300;
-      color: rgba(253,246,232,0.45);
+      color: rgba(253,246,232,0.4);
       letter-spacing: 0.04em;
+    }
+
+    /* legend row in header */
+    .route-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      color: rgba(253,246,232,0.55);
+    }
+
+    .legend-line {
+      width: 24px;
+      height: 2px;
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+
+    .legend-line.drive {
+      background: var(--drive-color);
+    }
+
+    .legend-line.fly {
+      background: none;
+      border-top: 2px dashed var(--fly-color);
+      height: 0;
+      margin-top: 1px;
     }
 
     .stops-list {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 0 24px;
+      padding: 4px 0 24px;
       scrollbar-width: thin;
       scrollbar-color: rgba(255,255,255,0.1) transparent;
     }
 
     .leg-label {
-      padding: 18px 28px 6px;
+      padding: 16px 28px 5px;
       font-size: 9.5px;
       font-weight: 500;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(253,246,232,0.28);
+      color: rgba(253,246,232,0.25);
     }
 
     .stop {
       display: flex;
       align-items: flex-start;
       gap: 14px;
-      padding: 12px 28px;
+      padding: 11px 28px;
       cursor: pointer;
       transition: background 0.18s;
       border-left: 2px solid transparent;
@@ -139,8 +164,7 @@
     .stop.type-hotel  .stop-number { background: rgba(201,95,56,0.28);  color: #e8855e; }
     .stop.type-villa  .stop-number { background: rgba(42,125,140,0.28); color: #5ab8ca; }
     .stop.type-airbnb .stop-number { background: rgba(242,217,162,0.2); color: var(--sand); }
-    .stop.type-flight .stop-number { background: rgba(255,255,255,0.08); color: rgba(253,246,232,0.4); }
-
+    .stop.type-flight .stop-number { background: rgba(255,255,255,0.08); color: rgba(253,246,232,0.38); }
     .stop.active .stop-number { background: var(--ocean) !important; color: white !important; }
 
     .stop-info { flex: 1; min-width: 0; }
@@ -151,70 +175,75 @@
       font-weight: 400;
       line-height: 1.2;
       color: var(--cloud);
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .stop-date {
       font-size: 10.5px;
       font-weight: 300;
-      color: rgba(253,246,232,0.38);
-      letter-spacing: 0.03em;
+      color: rgba(253,246,232,0.36);
     }
 
     .stop-address {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 300;
-      color: rgba(253,246,232,0.28);
-      margin-top: 2px;
+      color: rgba(253,246,232,0.25);
+      margin-top: 1px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
+    .connector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 28px 0 50px;
+      height: 18px;
+    }
+
     .connector-line {
-      margin-left: 39px;
       width: 1px;
-      height: 10px;
+      height: 100%;
       background: rgba(255,255,255,0.07);
     }
 
-    /* ── MAP PANEL ── */
-    .map-panel {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: var(--mist);
+    .connector-tag {
+      font-size: 8.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 1px 6px;
+      border-radius: 2px;
+      font-weight: 500;
     }
 
-    .map-topbar {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      z-index: 10;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 18px 22px;
-      background: linear-gradient(to bottom, rgba(250,236,208,0.96) 0%, rgba(250,236,208,0) 100%);
-      pointer-events: none;
-    }
+    .connector-tag.drive { color: var(--drive-color); background: rgba(42,125,140,0.15); }
+    .connector-tag.fly   { color: var(--fly-color);   background: rgba(201,95,56,0.15); }
 
-    .active-stop-card {
+    /* ── MAP ── */
+    .map-panel { position: relative; flex: 1; }
+
+    #map { width: 100%; height: 100%; }
+
+    /* custom popup */
+    .leaflet-popup-content-wrapper {
       background: var(--cloud);
       border-radius: 6px;
-      padding: 10px 16px;
-      box-shadow: 0 2px 20px rgba(30,45,56,0.14);
-      pointer-events: all;
-      max-width: 320px;
-      opacity: 0;
-      transform: translateY(-6px);
-      transition: opacity 0.28s, transform 0.28s;
+      box-shadow: 0 4px 24px rgba(30,45,56,0.18);
       border-top: 3px solid var(--ocean);
+      padding: 0;
     }
 
-    .active-stop-card.visible { opacity: 1; transform: translateY(0); }
+    .leaflet-popup-content { margin: 0; }
+    .leaflet-popup-tip { background: var(--cloud); }
+    .leaflet-popup-close-button { color: #aaa !important; top: 6px !important; right: 8px !important; }
 
-    .card-eyebrow {
+    .popup-inner {
+      padding: 12px 16px 14px;
+      min-width: 200px;
+    }
+
+    .popup-eyebrow {
       font-size: 9px;
       font-weight: 500;
       letter-spacing: 0.16em;
@@ -223,96 +252,53 @@
       margin-bottom: 4px;
     }
 
-    .card-name {
+    .popup-name {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 19px;
+      font-size: 18px;
       font-weight: 400;
       color: var(--ink);
-      line-height: 1.1;
+      line-height: 1.15;
+      margin-bottom: 3px;
     }
 
-    .card-address {
-      font-size: 11px;
+    .popup-date {
+      font-size: 10.5px;
       color: #8a7a60;
+    }
+
+    .popup-address {
+      font-size: 10px;
+      color: #aaa;
       margin-top: 3px;
     }
 
-    .view-toggle {
+    /* marker styles */
+    .custom-marker {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
       display: flex;
-      gap: 6px;
-      pointer-events: all;
-    }
-
-    .toggle-btn {
-      background: var(--cloud);
-      border: none;
-      border-radius: 4px;
-      padding: 7px 14px;
+      align-items: center;
+      justify-content: center;
       font-family: 'Jost', sans-serif;
       font-size: 11px;
       font-weight: 500;
-      letter-spacing: 0.06em;
-      color: var(--ink);
+      border: 2.5px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
       cursor: pointer;
-      box-shadow: 0 2px 12px rgba(30,45,56,0.12);
-      transition: background 0.15s, color 0.15s;
+      transition: transform 0.15s;
+      color: white;
     }
 
-    .toggle-btn.active { background: var(--navy); color: var(--cloud); }
-
-    .map-frame-wrapper {
-      flex: 1;
-      position: relative;
-    }
-
-    .map-frame-wrapper iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-
-    .map-layer {
-      position: absolute;
-      inset: 0;
-      transition: opacity 0.3s;
-    }
-
-    .map-layer.hidden { opacity: 0; pointer-events: none; }
-
-    /* ── LEGEND ── */
-    .legend {
-      position: absolute;
-      bottom: 20px;
-      right: 18px;
-      background: var(--cloud);
-      border-radius: 6px;
-      padding: 10px 14px;
-      box-shadow: 0 2px 16px rgba(30,45,56,0.12);
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 10.5px;
-      color: #6a5c44;
-    }
-
-    .legend-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    .custom-marker:hover { transform: scale(1.15); }
+    .custom-marker.hotel  { background: var(--terracotta); }
+    .custom-marker.villa  { background: var(--ocean); }
+    .custom-marker.airbnb { background: #c8a055; }
+    .custom-marker.flight { background: var(--navy); font-size: 13px; }
 
     @media (max-width: 700px) {
       .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 100dvh; }
-      .sidebar { max-height: 45vh; }
+      .sidebar { max-height: 44vh; }
     }
   </style>
 </head>
@@ -320,141 +306,241 @@
 
 <div class="layout">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="trip-eyebrow">Family Trip · Jul 15 – 25, 2026</div>
       <h1 class="trip-title">Summer<br><em>Trip '26</em></h1>
       <p class="trip-meta">Vienna · Bad Kleinkirchheim · Puglia · Rome</p>
+      <div class="route-legend">
+        <div class="legend-item">
+          <div class="legend-line drive"></div>
+          Driving
+        </div>
+        <div class="legend-item">
+          <div class="legend-line fly"></div>
+          Flying
+        </div>
+      </div>
     </div>
     <div class="stops-list" id="stopsList"></div>
   </aside>
 
-  <!-- MAP -->
   <main class="map-panel">
-    <div class="map-topbar">
-      <div class="active-stop-card" id="activeCard">
-        <div class="card-eyebrow" id="cardEyebrow"></div>
-        <div class="card-name" id="cardName"></div>
-        <div class="card-address" id="cardAddress"></div>
-      </div>
-      <div class="view-toggle">
-        <button class="toggle-btn active" id="btnOverview" onclick="setView('overview')">Overview</button>
-        <button class="toggle-btn" id="btnSelected" onclick="setView('selected')">Selected</button>
-      </div>
-    </div>
-
-    <div class="map-frame-wrapper">
-      <div class="map-layer" id="layerOverview">
-        <iframe
-          loading="lazy"
-          allowfullscreen
-          referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyA77SEy2sgZFAFdGkXO8voXpbe65ymCsk8&origin=Am+Stadtpark+1,+1030+Wien,+Austria&destination=Via+del+Monte+della+Farina+36,+00186+Roma,+Italy&waypoints=Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria|Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy&mode=driving&language=en">
-        </iframe>
-      </div>
-      <div class="map-layer hidden" id="layerSelected">
-        <iframe id="selectedIframe" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src=""></iframe>
-      </div>
-    </div>
-
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#c95f38"></div> Hotel</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#2a7d8c"></div> Villa</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#c8a86b"></div> Airbnb</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#8a9aaa"></div> Transit</div>
-    </div>
+    <div id="map"></div>
   </main>
 
 </div>
 
 <script>
-  const MAPS_KEY = 'AIzaSyA77SEy2sgZFAFdGkXO8voXpbe65ymCsk8';
+  // ── DATA ──────────────────────────────────────────────────────────────────
+  const stops = [
+    { num:1, name:'Vienna Int\'l Airport (VIE)', type:'flight', date:'Jul 15', address:'1300 Schwechat, Austria',                   lat:48.1103, lng:16.5697, icon:'✈' },
+    { num:2, name:'Hilton Vienna Park',           type:'hotel',  date:'Jul 15–16', address:'Am Stadtpark 1, 1030 Wien, Austria',    lat:48.2062, lng:16.3829 },
+    { num:3, name:'Hotel Pulverer',               type:'hotel',  date:'Jul 16–19', address:'Thermenstraße 4, 9546 Bad Kleinkirchheim', lat:46.8137, lng:13.7800 },
+    { num:4, name:'Vienna Int\'l Airport (VIE)', type:'flight', date:'Jul 19', address:'1300 Schwechat, Austria',                   lat:48.1103, lng:16.5697, icon:'✈', hideNum:true },
+    { num:5, name:'Bari Airport (BRI)',           type:'flight', date:'Jul 19', address:'Viale Enzo Ferrari, 70128 Bari, Italy',    lat:41.1390, lng:16.7606, icon:'✈' },
+    { num:6, name:'Casina Menga Villa',           type:'villa',  date:'Jul 19–23', address:'Contrada Bellocchio, 70043 Monopoli',   lat:40.9510, lng:17.3150 },
+    { num:7, name:'Residenza Farina',             type:'airbnb', date:'Jul 23–25', address:'Via del Monte della Farina 36, 00186 Roma', lat:41.8946, lng:12.4749 },
+    { num:8, name:'Fiumicino Airport (FCO)',      type:'flight', date:'Jul 25', address:'Via Pierpaolo Racchetti 1, 00054 Fiumicino', lat:41.8003, lng:12.2388, icon:'✈' },
+  ];
+
+  // segments: [fromIdx, toIdx, 'drive'|'fly']
+  const segments = [
+    [0, 1, 'drive'],   // VIE airport → Hilton Vienna
+    [1, 2, 'drive'],   // Hilton Vienna → Hotel Pulverer
+    [2, 3, 'drive'],   // Hotel Pulverer → VIE airport (return)
+    [3, 4, 'fly'],     // VIE → BRI (flight)
+    [4, 5, 'drive'],   // BRI → Casina Menga
+    [5, 6, 'drive'],   // Casina Menga → Residenza Farina
+    [6, 7, 'drive'],   // Residenza Farina → FCO
+  ];
 
   const legs = [
     {
       label: 'Austria',
-      stops: [
-        { num:1, name:'Vienna International Airport', date:'Jul 15', address:'1300 Schwechat, Austria', type:'flight', q:'Vienna+International+Airport,+Austria', note:'Fly in · Pick up Enterprise car' },
-        { num:2, name:'Hilton Vienna Park', date:'Jul 15 – 16', address:'Am Stadtpark 1, 1030 Wien, Austria', type:'hotel', q:'Am+Stadtpark+1,+1030+Wien,+Austria', note:'1 night · 2 rooms' },
-        { num:3, name:'Hotel Pulverer', date:'Jul 16 – 19', address:'Thermenstraße 4, 9546 Bad Kleinkirchheim', type:'hotel', q:'Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria', note:'3 nights · Emotional heart of the trip' },
+      stops: [0,1,2],
+      connectors: [
+        { tag: 'Drive', type: 'drive' },
+        { tag: 'Drive', type: 'drive' },
       ]
     },
     {
       label: 'Italy',
-      stops: [
-        { num:4, name:'Bari Airport (BRI)', date:'Jul 19', address:'Viale Enzo Ferrari, 70128 Bari, Italy', type:'flight', q:'Bari+International+Airport,+Puglia,+Italy', note:'Ryanair FR9066 · Pick up Alamo car' },
-        { num:5, name:'Casina Menga Villa', date:'Jul 19 – 23', address:'Contrada Bellocchio, 70043 Monopoli, Puglia', type:'villa', q:'Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy', note:'4 nights · Private villa in Monopoli' },
-        { num:6, name:'Residenza Farina', date:'Jul 23 – 25', address:'Via del Monte della Farina 36, 00186 Roma', type:'airbnb', q:'Via+del+Monte+della+Farina+36,+00186+Roma,+Italy', note:'2 nights · Central Rome' },
-        { num:7, name:'Fiumicino Airport (FCO)', date:'Jul 25', address:'Via Pierpaolo Racchetti 1, 00054 Fiumicino', type:'flight', q:'Leonardo+da+Vinci+International+Airport,+Fiumicino,+Italy', note:'DL215 · Return Alamo car' },
+      stops: [4,5,6,7],
+      connectors: [
+        { tag: 'Drive', type: 'drive' },
+        { tag: 'Drive', type: 'drive' },
+        { tag: 'Drive', type: 'drive' },
       ]
     }
   ];
 
-  let activeStop = null;
+  // ── MAP INIT ──────────────────────────────────────────────────────────────
+  const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([46.5, 14.5], 5);
 
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  // ── DRAW SEGMENTS ─────────────────────────────────────────────────────────
+  const driveStyle = { color: '#2a7d8c', weight: 3, opacity: 0.85, lineJoin: 'round' };
+  const flyStyle   = { color: '#c95f38', weight: 2.5, opacity: 0.8, dashArray: '8, 7' };
+
+  function greatCirclePoints(lat1, lng1, lat2, lng2, n) {
+    // generate intermediate points along a great circle arc for curved flight paths
+    const toRad = d => d * Math.PI / 180;
+    const toDeg = r => r * 180 / Math.PI;
+    const φ1 = toRad(lat1), λ1 = toRad(lng1);
+    const φ2 = toRad(lat2), λ2 = toRad(lng2);
+    const d = 2 * Math.asin(Math.sqrt(
+      Math.pow(Math.sin((φ2-φ1)/2), 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.pow(Math.sin((λ2-λ1)/2), 2)
+    ));
+    const pts = [];
+    for (let i = 0; i <= n; i++) {
+      const f = i / n;
+      const A = Math.sin((1-f)*d) / Math.sin(d);
+      const B = Math.sin(f*d) / Math.sin(d);
+      const x = A*Math.cos(φ1)*Math.cos(λ1) + B*Math.cos(φ2)*Math.cos(λ2);
+      const y = A*Math.cos(φ1)*Math.sin(λ1) + B*Math.cos(φ2)*Math.sin(λ2);
+      const z = A*Math.sin(φ1)               + B*Math.sin(φ2);
+      pts.push([toDeg(Math.atan2(z, Math.sqrt(x*x+y*y))), toDeg(Math.atan2(y,x))]);
+    }
+    return pts;
+  }
+
+  segments.forEach(([fi, ti, mode]) => {
+    const from = stops[fi], to = stops[ti];
+    if (mode === 'drive') {
+      L.polyline([[from.lat, from.lng],[to.lat, to.lng]], driveStyle).addTo(map);
+    } else {
+      const pts = greatCirclePoints(from.lat, from.lng, to.lat, to.lng, 60);
+      L.polyline(pts, flyStyle).addTo(map);
+
+      // plane icon midpoint
+      const mid = pts[Math.floor(pts.length / 2)];
+      const planeIcon = L.divIcon({
+        className: '',
+        html: `<div style="font-size:16px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.3));transform:rotate(-30deg);">✈</div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+      L.marker(mid, { icon: planeIcon, interactive: false }).addTo(map);
+    }
+  });
+
+  // ── MARKERS ───────────────────────────────────────────────────────────────
+  const typeLabels = { hotel:'Hotel', villa:'Villa', airbnb:'Airbnb', flight:'Airport' };
+  const markerMap = {};
+
+  // Deduplicate VIE (shows twice — arrival & departure)
+  const renderedCoords = {};
+
+  stops.forEach((stop, i) => {
+    const key = `${stop.lat},${stop.lng}`;
+    // For VIE which appears twice, skip the second pin but still register
+    if (renderedCoords[key]) {
+      markerMap[i] = markerMap[renderedCoords[key]];
+      return;
+    }
+    renderedCoords[key] = i;
+
+    const displayNum = stop.icon || stop.num;
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="custom-marker ${stop.type}">${displayNum}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -18]
+    });
+
+    const popup = L.popup({ closeButton: true, maxWidth: 260 }).setContent(`
+      <div class="popup-inner">
+        <div class="popup-eyebrow">${typeLabels[stop.type] || ''}</div>
+        <div class="popup-name">${stop.name}</div>
+        <div class="popup-date">${stop.date}</div>
+        <div class="popup-address">${stop.address}</div>
+      </div>
+    `);
+
+    const marker = L.marker([stop.lat, stop.lng], { icon }).addTo(map).bindPopup(popup);
+    markerMap[i] = marker;
+  });
+
+  // ── FIT BOUNDS ────────────────────────────────────────────────────────────
+  const allLatLngs = stops.map(s => [s.lat, s.lng]);
+  map.fitBounds(L.latLngBounds(allLatLngs).pad(0.12));
+
+  // ── SIDEBAR ───────────────────────────────────────────────────────────────
   function buildSidebar() {
     const list = document.getElementById('stopsList');
-    legs.forEach((leg, li) => {
-      const legEl = document.createElement('div');
-      const label = document.createElement('div');
-      label.className = 'leg-label';
-      label.textContent = leg.label;
-      legEl.appendChild(label);
 
-      leg.stops.forEach((stop, si) => {
-        const stopEl = document.createElement('div');
-        stopEl.className = `stop type-${stop.type}`;
-        stopEl.id = `stop-${stop.num}`;
-        stopEl.innerHTML = `
-          <div class="stop-number">${stop.num}</div>
-          <div class="stop-info">
-            <div class="stop-name">${stop.name}</div>
-            <div class="stop-date">${stop.date} &nbsp;·&nbsp; ${stop.note}</div>
-            <div class="stop-address">${stop.address}</div>
-          </div>`;
-        stopEl.addEventListener('click', () => selectStop(stop));
-        legEl.appendChild(stopEl);
+    // Austria leg
+    const austriaStops = [0,1,2];
+    const austriaConns = ['drive','drive'];
+    renderLeg(list, 'Austria', austriaStops, austriaConns);
 
-        const isLastStop = li === legs.length - 1 && si === leg.stops.length - 1;
-        if (!isLastStop) {
-          const line = document.createElement('div');
-          line.className = 'connector-line';
-          legEl.appendChild(line);
+    // Flight connector
+    const transDiv = document.createElement('div');
+    transDiv.style.cssText = 'padding:10px 28px 10px 50px;display:flex;align-items:center;gap:10px;';
+    transDiv.innerHTML = `
+      <div style="width:1px;height:100%;background:rgba(255,255,255,0.06)"></div>
+      <span class="connector-tag fly">✈ VIE → BRI · Ryanair FR9066 · Jul 19</span>`;
+    list.appendChild(transDiv);
+
+    // Italy leg
+    const italyStops = [4,5,6,7];
+    const italyConns = ['drive','drive','drive'];
+    renderLeg(list, 'Italy', italyStops, italyConns);
+  }
+
+  function renderLeg(container, label, stopIdxs, connTypes) {
+    const legEl = document.createElement('div');
+
+    const lbl = document.createElement('div');
+    lbl.className = 'leg-label';
+    lbl.textContent = label;
+    legEl.appendChild(lbl);
+
+    stopIdxs.forEach((si, ii) => {
+      const stop = stops[si];
+
+      const stopEl = document.createElement('div');
+      stopEl.className = `stop type-${stop.type}`;
+      stopEl.id = `sidebar-stop-${si}`;
+      stopEl.innerHTML = `
+        <div class="stop-number">${stop.icon || stop.num}</div>
+        <div class="stop-info">
+          <div class="stop-name">${stop.name}</div>
+          <div class="stop-date">${stop.date}</div>
+          <div class="stop-address">${stop.address}</div>
+        </div>`;
+
+      stopEl.addEventListener('click', () => {
+        document.querySelectorAll('.stop').forEach(e => e.classList.remove('active'));
+        stopEl.classList.add('active');
+        const marker = markerMap[si];
+        if (marker) {
+          map.setView(marker.getLatLng(), 13, { animate: true });
+          marker.openPopup();
         }
       });
 
-      list.appendChild(legEl);
+      legEl.appendChild(stopEl);
+
+      if (ii < connTypes.length) {
+        const conn = document.createElement('div');
+        conn.className = 'connector';
+        conn.innerHTML = `
+          <div class="connector-line"></div>
+          <span class="connector-tag ${connTypes[ii]}">${connTypes[ii] === 'drive' ? '🚗 Drive' : '✈ Fly'}</span>`;
+        legEl.appendChild(conn);
+      }
     });
-  }
 
-  function selectStop(stop) {
-    document.querySelectorAll('.stop').forEach(el => el.classList.remove('active'));
-    const el = document.getElementById(`stop-${stop.num}`);
-    if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
-    activeStop = stop;
-
-    const typeLabels = { hotel:'Hotel', villa:'Villa', airbnb:'Airbnb', flight:'Airport / Transit' };
-    document.getElementById('cardEyebrow').textContent = typeLabels[stop.type] || '';
-    document.getElementById('cardName').textContent = stop.name;
-    document.getElementById('cardAddress').textContent = stop.address;
-    document.getElementById('activeCard').classList.add('visible');
-
-    document.getElementById('selectedIframe').src =
-      `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${stop.q}&language=en`;
-    setView('selected');
-  }
-
-  function setView(view) {
-    document.getElementById('layerOverview').classList.toggle('hidden', view !== 'overview');
-    document.getElementById('layerSelected').classList.toggle('hidden', view !== 'selected');
-    document.getElementById('btnOverview').classList.toggle('active', view === 'overview');
-    document.getElementById('btnSelected').classList.toggle('active', view === 'selected');
-    if (view === 'overview') {
-      document.getElementById('activeCard').classList.remove('visible');
-      document.querySelectorAll('.stop').forEach(el => el.classList.remove('active'));
-      activeStop = null;
-    }
+    container.appendChild(legEl);
   }
 
   buildSidebar();
