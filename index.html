@@ -9,21 +9,19 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --cream: #f5f0e8;
-      --ink: #1a1612;
-      --terracotta: #b85c38;
-      --sage: #6b7c5e;
-      --gold: #c9a84c;
-      --mist: #e8e2d6;
-      --panel: #ffffff;
+      --sand:        #f2d9a2;       /* warm sandy amber — sky/beach */
+      --sand-light:  #faecd0;       /* lightest cloud/highlight */
+      --ocean:       #2a7d8c;       /* deep teal water */
+      --ocean-dark:  #1d5c68;       /* darker teal depth */
+      --terracotta:  #c95f38;       /* burnt orange palm/cliff */
+      --rust:        #a84228;       /* deeper rust accent */
+      --navy:        #2b3a4a;       /* dark navy topbar */
+      --cloud:       #fdf6e8;       /* soft cloud white */
+      --ink:         #1e2d38;       /* near-black text */
+      --mist:        #e8d9b8;       /* mid sand tone */
     }
 
-    html, body {
-      height: 100%;
-      font-family: 'Jost', sans-serif;
-      background: var(--cream);
-      color: var(--ink);
-    }
+    html, body { height: 100%; font-family: 'Jost', sans-serif; background: var(--sand-light); color: var(--ink); }
 
     .layout {
       display: grid;
@@ -36,15 +34,27 @@
     .sidebar {
       display: flex;
       flex-direction: column;
-      background: var(--ink);
-      color: var(--cream);
+      background: var(--navy);
+      color: var(--cloud);
       overflow: hidden;
+      position: relative;
+    }
+
+    /* subtle wave texture at bottom of sidebar */
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 120px;
+      background: linear-gradient(to top, rgba(42,125,140,0.15), transparent);
+      pointer-events: none;
     }
 
     .sidebar-header {
-      padding: 32px 28px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 32px 28px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(42,125,140,0.2) 0%, transparent 60%);
     }
 
     .trip-eyebrow {
@@ -53,29 +63,28 @@
       font-weight: 500;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--gold);
+      color: var(--sand);
       margin-bottom: 8px;
     }
 
     .trip-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 300;
-      line-height: 1.1;
-      letter-spacing: -0.01em;
-      color: var(--cream);
+      line-height: 1.05;
+      color: var(--cloud);
     }
 
     .trip-title em {
       font-style: italic;
-      color: var(--gold);
+      color: var(--sand);
     }
 
     .trip-meta {
       margin-top: 10px;
       font-size: 11.5px;
       font-weight: 300;
-      color: rgba(245,240,232,0.5);
+      color: rgba(253,246,232,0.45);
       letter-spacing: 0.04em;
     }
 
@@ -84,11 +93,7 @@
       overflow-y: auto;
       padding: 8px 0 24px;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.12) transparent;
-    }
-
-    .leg {
-      padding: 0;
+      scrollbar-color: rgba(255,255,255,0.1) transparent;
     }
 
     .leg-label {
@@ -97,7 +102,7 @@
       font-weight: 500;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: rgba(245,240,232,0.3);
+      color: rgba(253,246,232,0.28);
     }
 
     .stop {
@@ -108,16 +113,13 @@
       cursor: pointer;
       transition: background 0.18s;
       border-left: 2px solid transparent;
-      position: relative;
     }
 
-    .stop:hover {
-      background: rgba(255,255,255,0.04);
-    }
+    .stop:hover { background: rgba(255,255,255,0.04); }
 
     .stop.active {
-      background: rgba(201,168,76,0.08);
-      border-left-color: var(--gold);
+      background: rgba(42,125,140,0.18);
+      border-left-color: var(--ocean);
     }
 
     .stop-number {
@@ -134,12 +136,12 @@
       transition: background 0.18s, color 0.18s;
     }
 
-    .stop.type-hotel .stop-number { background: rgba(184,92,56,0.25); color: var(--terracotta); }
-    .stop.type-villa .stop-number  { background: rgba(107,124,94,0.25); color: var(--sage); }
-    .stop.type-airbnb .stop-number { background: rgba(201,168,76,0.2); color: var(--gold); }
-    .stop.type-flight .stop-number { background: rgba(245,240,232,0.1); color: rgba(245,240,232,0.5); }
+    .stop.type-hotel  .stop-number { background: rgba(201,95,56,0.28);  color: #e8855e; }
+    .stop.type-villa  .stop-number { background: rgba(42,125,140,0.28); color: #5ab8ca; }
+    .stop.type-airbnb .stop-number { background: rgba(242,217,162,0.2); color: var(--sand); }
+    .stop.type-flight .stop-number { background: rgba(255,255,255,0.08); color: rgba(253,246,232,0.4); }
 
-    .stop.active .stop-number { background: var(--gold) !important; color: var(--ink) !important; }
+    .stop.active .stop-number { background: var(--ocean) !important; color: white !important; }
 
     .stop-info { flex: 1; min-width: 0; }
 
@@ -148,46 +150,32 @@
       font-size: 16px;
       font-weight: 400;
       line-height: 1.2;
-      color: var(--cream);
+      color: var(--cloud);
       margin-bottom: 3px;
     }
 
     .stop-date {
       font-size: 10.5px;
       font-weight: 300;
-      color: rgba(245,240,232,0.4);
-      letter-spacing: 0.04em;
+      color: rgba(253,246,232,0.38);
+      letter-spacing: 0.03em;
     }
 
     .stop-address {
       font-size: 10.5px;
       font-weight: 300;
-      color: rgba(245,240,232,0.35);
+      color: rgba(253,246,232,0.28);
       margin-top: 2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .connector {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 4px 28px 4px 49px;
-    }
-
     .connector-line {
+      margin-left: 39px;
       width: 1px;
-      height: 16px;
-      background: rgba(255,255,255,0.1);
-      margin-left: 11px;
-    }
-
-    .connector-label {
-      font-size: 9px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(245,240,232,0.2);
+      height: 10px;
+      background: rgba(255,255,255,0.07);
     }
 
     /* ── MAP PANEL ── */
@@ -196,6 +184,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      background: var(--mist);
     }
 
     .map-topbar {
@@ -204,41 +193,39 @@
       z-index: 10;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 16px 24px;
-      background: linear-gradient(to bottom, rgba(245,240,232,0.95) 0%, rgba(245,240,232,0) 100%);
+      align-items: flex-start;
+      padding: 18px 22px;
+      background: linear-gradient(to bottom, rgba(250,236,208,0.96) 0%, rgba(250,236,208,0) 100%);
       pointer-events: none;
     }
 
     .active-stop-card {
-      background: white;
+      background: var(--cloud);
       border-radius: 6px;
       padding: 10px 16px;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+      box-shadow: 0 2px 20px rgba(30,45,56,0.14);
       pointer-events: all;
-      max-width: 340px;
+      max-width: 320px;
       opacity: 0;
       transform: translateY(-6px);
       transition: opacity 0.28s, transform 0.28s;
+      border-top: 3px solid var(--ocean);
     }
 
-    .active-stop-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .active-stop-card.visible { opacity: 1; transform: translateY(0); }
 
     .card-eyebrow {
       font-size: 9px;
       font-weight: 500;
       letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--gold);
+      color: var(--ocean);
       margin-bottom: 4px;
     }
 
     .card-name {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 400;
       color: var(--ink);
       line-height: 1.1;
@@ -246,7 +233,7 @@
 
     .card-address {
       font-size: 11px;
-      color: #888;
+      color: #8a7a60;
       margin-top: 3px;
     }
 
@@ -257,7 +244,7 @@
     }
 
     .toggle-btn {
-      background: white;
+      background: var(--cloud);
       border: none;
       border-radius: 4px;
       padding: 7px 14px;
@@ -267,14 +254,11 @@
       letter-spacing: 0.06em;
       color: var(--ink);
       cursor: pointer;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 12px rgba(30,45,56,0.12);
       transition: background 0.15s, color 0.15s;
     }
 
-    .toggle-btn.active {
-      background: var(--ink);
-      color: var(--cream);
-    }
+    .toggle-btn.active { background: var(--navy); color: var(--cloud); }
 
     .map-frame-wrapper {
       flex: 1;
@@ -288,26 +272,23 @@
       display: block;
     }
 
-    .map-frame-wrapper .map-layer {
+    .map-layer {
       position: absolute;
       inset: 0;
       transition: opacity 0.3s;
     }
 
-    .map-frame-wrapper .map-layer.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+    .map-layer.hidden { opacity: 0; pointer-events: none; }
 
     /* ── LEGEND ── */
     .legend {
       position: absolute;
-      bottom: 24px;
-      right: 20px;
-      background: white;
+      bottom: 20px;
+      right: 18px;
+      background: var(--cloud);
       border-radius: 6px;
-      padding: 12px 16px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      padding: 10px 14px;
+      box-shadow: 0 2px 16px rgba(30,45,56,0.12);
       z-index: 10;
       display: flex;
       flex-direction: column;
@@ -319,7 +300,7 @@
       align-items: center;
       gap: 8px;
       font-size: 10.5px;
-      color: #555;
+      color: #6a5c44;
     }
 
     .legend-dot {
@@ -330,18 +311,8 @@
     }
 
     @media (max-width: 700px) {
-      .layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
-        height: 100dvh;
-      }
-      .sidebar {
-        max-height: 45vh;
-        overflow: hidden;
-      }
-      .stops-list {
-        overflow-y: auto;
-      }
+      .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 100dvh; }
+      .sidebar { max-height: 45vh; }
     }
   </style>
 </head>
@@ -356,7 +327,6 @@
       <h1 class="trip-title">Summer<br><em>Trip '26</em></h1>
       <p class="trip-meta">Vienna · Bad Kleinkirchheim · Puglia · Rome</p>
     </div>
-
     <div class="stops-list" id="stopsList"></div>
   </aside>
 
@@ -375,125 +345,58 @@
     </div>
 
     <div class="map-frame-wrapper">
-      <!-- Overview: all stops via Google Maps directions embed -->
       <div class="map-layer" id="layerOverview">
         <iframe
           loading="lazy"
           allowfullscreen
           referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&origin=Am+Stadtpark+1,+1030+Wien,+Austria&destination=Via+del+Monte+della+Farina+36,+00186+Roma,+Italy&waypoints=Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria|Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy&mode=driving&language=en">
+          src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyA77SEy2sgZFAFdGkXO8voXpbe65ymCsk8&origin=Am+Stadtpark+1,+1030+Wien,+Austria&destination=Via+del+Monte+della+Farina+36,+00186+Roma,+Italy&waypoints=Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria|Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy&mode=driving&language=en">
         </iframe>
       </div>
-      <!-- Selected stop: swapped in dynamically -->
       <div class="map-layer hidden" id="layerSelected">
         <iframe id="selectedIframe" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src=""></iframe>
       </div>
     </div>
 
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#b85c38"></div> Hotel</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#6b7c5e"></div> Villa</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#c9a84c"></div> Airbnb</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#aaa"></div> Transit</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c95f38"></div> Hotel</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2a7d8c"></div> Villa</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c8a86b"></div> Airbnb</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8a9aaa"></div> Transit</div>
     </div>
   </main>
 
 </div>
 
 <script>
-  const MAPS_KEY = 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY';
+  const MAPS_KEY = 'AIzaSyA77SEy2sgZFAFdGkXO8voXpbe65ymCsk8';
 
   const legs = [
     {
       label: 'Austria',
       stops: [
-        {
-          num: 1,
-          name: 'Vienna International Airport',
-          shortName: 'VIE Arrival',
-          date: 'Jul 15',
-          address: '1300 Schwechat, Austria',
-          type: 'flight',
-          q: 'Vienna+International+Airport,+Austria',
-          note: 'Fly in · Pick up Enterprise car'
-        },
-        {
-          num: 2,
-          name: 'Hilton Vienna Park',
-          shortName: 'Hilton Vienna Park',
-          date: 'Jul 15 – 16',
-          address: 'Am Stadtpark 1, 1030 Wien, Austria',
-          type: 'hotel',
-          q: 'Am+Stadtpark+1,+1030+Wien,+Austria',
-          note: '1 night · 2 rooms'
-        },
-        {
-          num: 3,
-          name: 'Hotel Pulverer',
-          shortName: 'Hotel Pulverer',
-          date: 'Jul 16 – 19',
-          address: 'Thermenstraße 4, 9546 Bad Kleinkirchheim',
-          type: 'hotel',
-          q: 'Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria',
-          note: '3 nights · Emotional heart of the trip'
-        },
+        { num:1, name:'Vienna International Airport', date:'Jul 15', address:'1300 Schwechat, Austria', type:'flight', q:'Vienna+International+Airport,+Austria', note:'Fly in · Pick up Enterprise car' },
+        { num:2, name:'Hilton Vienna Park', date:'Jul 15 – 16', address:'Am Stadtpark 1, 1030 Wien, Austria', type:'hotel', q:'Am+Stadtpark+1,+1030+Wien,+Austria', note:'1 night · 2 rooms' },
+        { num:3, name:'Hotel Pulverer', date:'Jul 16 – 19', address:'Thermenstraße 4, 9546 Bad Kleinkirchheim', type:'hotel', q:'Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria', note:'3 nights · Emotional heart of the trip' },
       ]
     },
     {
       label: 'Italy',
       stops: [
-        {
-          num: 4,
-          name: 'Bari Airport (BRI)',
-          shortName: 'Fly VIE → BRI',
-          date: 'Jul 19',
-          address: 'Viale Enzo Ferrari, 70128 Bari, Italy',
-          type: 'flight',
-          q: 'Bari+International+Airport,+Puglia,+Italy',
-          note: 'Ryanair FR9066 · Pick up Alamo car'
-        },
-        {
-          num: 5,
-          name: 'Casina Menga Villa',
-          shortName: 'Casina Menga',
-          date: 'Jul 19 – 23',
-          address: 'Contrada Bellocchio, 70043 Monopoli, Puglia',
-          type: 'villa',
-          q: 'Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy',
-          note: '4 nights · Private villa in Monopoli'
-        },
-        {
-          num: 6,
-          name: 'Residenza Farina',
-          shortName: 'Residenza Farina',
-          date: 'Jul 23 – 25',
-          address: 'Via del Monte della Farina 36, 00186 Roma',
-          type: 'airbnb',
-          q: 'Via+del+Monte+della+Farina+36,+00186+Roma,+Italy',
-          note: '2 nights · Central Rome'
-        },
-        {
-          num: 7,
-          name: 'Fiumicino Airport (FCO)',
-          shortName: 'Fly FCO → ATL',
-          date: 'Jul 25',
-          address: 'Via Pierpaolo Racchetti 1, 00054 Fiumicino',
-          type: 'flight',
-          q: 'Leonardo+da+Vinci+International+Airport,+Fiumicino,+Italy',
-          note: 'DL215 · Return Alamo car'
-        },
+        { num:4, name:'Bari Airport (BRI)', date:'Jul 19', address:'Viale Enzo Ferrari, 70128 Bari, Italy', type:'flight', q:'Bari+International+Airport,+Puglia,+Italy', note:'Ryanair FR9066 · Pick up Alamo car' },
+        { num:5, name:'Casina Menga Villa', date:'Jul 19 – 23', address:'Contrada Bellocchio, 70043 Monopoli, Puglia', type:'villa', q:'Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy', note:'4 nights · Private villa in Monopoli' },
+        { num:6, name:'Residenza Farina', date:'Jul 23 – 25', address:'Via del Monte della Farina 36, 00186 Roma', type:'airbnb', q:'Via+del+Monte+della+Farina+36,+00186+Roma,+Italy', note:'2 nights · Central Rome' },
+        { num:7, name:'Fiumicino Airport (FCO)', date:'Jul 25', address:'Via Pierpaolo Racchetti 1, 00054 Fiumicino', type:'flight', q:'Leonardo+da+Vinci+International+Airport,+Fiumicino,+Italy', note:'DL215 · Return Alamo car' },
       ]
     }
   ];
 
   let activeStop = null;
-  let currentView = 'overview';
 
   function buildSidebar() {
     const list = document.getElementById('stopsList');
     legs.forEach((leg, li) => {
       const legEl = document.createElement('div');
-      legEl.className = 'leg';
       const label = document.createElement('div');
       label.className = 'leg-label';
       label.textContent = leg.label;
@@ -509,19 +412,15 @@
             <div class="stop-name">${stop.name}</div>
             <div class="stop-date">${stop.date} &nbsp;·&nbsp; ${stop.note}</div>
             <div class="stop-address">${stop.address}</div>
-          </div>
-        `;
+          </div>`;
         stopEl.addEventListener('click', () => selectStop(stop));
         legEl.appendChild(stopEl);
 
-        // connector between stops (not after last)
-        const isLastInLeg = si === leg.stops.length - 1;
-        const isLastLeg = li === legs.length - 1;
-        if (!isLastInLeg || !isLastLeg) {
-          const conn = document.createElement('div');
-          conn.className = 'connector-line';
-          conn.style.cssText = 'margin-left:39px; width:1px; height:10px; background:rgba(255,255,255,0.08)';
-          legEl.appendChild(conn);
+        const isLastStop = li === legs.length - 1 && si === leg.stops.length - 1;
+        if (!isLastStop) {
+          const line = document.createElement('div');
+          line.className = 'connector-line';
+          legEl.appendChild(line);
         }
       });
 
@@ -530,33 +429,27 @@
   }
 
   function selectStop(stop) {
-    // deselect previous
     document.querySelectorAll('.stop').forEach(el => el.classList.remove('active'));
     const el = document.getElementById(`stop-${stop.num}`);
     if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
-
     activeStop = stop;
 
-    // update card
-    const typeLabels = { hotel: 'Hotel', villa: 'Villa', airbnb: 'Airbnb', flight: 'Airport / Transit' };
+    const typeLabels = { hotel:'Hotel', villa:'Villa', airbnb:'Airbnb', flight:'Airport / Transit' };
     document.getElementById('cardEyebrow').textContent = typeLabels[stop.type] || '';
     document.getElementById('cardName').textContent = stop.name;
     document.getElementById('cardAddress').textContent = stop.address;
     document.getElementById('activeCard').classList.add('visible');
 
-    // load selected iframe
-    const src = `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${stop.q}&language=en`;
-    document.getElementById('selectedIframe').src = src;
+    document.getElementById('selectedIframe').src =
+      `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${stop.q}&language=en`;
     setView('selected');
   }
 
   function setView(view) {
-    currentView = view;
     document.getElementById('layerOverview').classList.toggle('hidden', view !== 'overview');
     document.getElementById('layerSelected').classList.toggle('hidden', view !== 'selected');
     document.getElementById('btnOverview').classList.toggle('active', view === 'overview');
     document.getElementById('btnSelected').classList.toggle('active', view === 'selected');
-
     if (view === 'overview') {
       document.getElementById('activeCard').classList.remove('visible');
       document.querySelectorAll('.stop').forEach(el => el.classList.remove('active'));
