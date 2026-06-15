@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summer Trip '26</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f5f0e8;
+      --ink: #1a1612;
+      --terracotta: #b85c38;
+      --sage: #6b7c5e;
+      --gold: #c9a84c;
+      --mist: #e8e2d6;
+      --panel: #ffffff;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Jost', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      background: var(--ink);
+      color: var(--cream);
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 32px 28px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .trip-eyebrow {
+      font-family: 'Jost', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .trip-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: var(--cream);
+    }
+
+    .trip-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .trip-meta {
+      margin-top: 10px;
+      font-size: 11.5px;
+      font-weight: 300;
+      color: rgba(245,240,232,0.5);
+      letter-spacing: 0.04em;
+    }
+
+    .stops-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0 24px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.12) transparent;
+    }
+
+    .leg {
+      padding: 0;
+    }
+
+    .leg-label {
+      padding: 18px 28px 6px;
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.3);
+    }
+
+    .stop {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: background 0.18s;
+      border-left: 2px solid transparent;
+      position: relative;
+    }
+
+    .stop:hover {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .stop.active {
+      background: rgba(201,168,76,0.08);
+      border-left-color: var(--gold);
+    }
+
+    .stop-number {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 500;
+      margin-top: 1px;
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .stop.type-hotel .stop-number { background: rgba(184,92,56,0.25); color: var(--terracotta); }
+    .stop.type-villa .stop-number  { background: rgba(107,124,94,0.25); color: var(--sage); }
+    .stop.type-airbnb .stop-number { background: rgba(201,168,76,0.2); color: var(--gold); }
+    .stop.type-flight .stop-number { background: rgba(245,240,232,0.1); color: rgba(245,240,232,0.5); }
+
+    .stop.active .stop-number { background: var(--gold) !important; color: var(--ink) !important; }
+
+    .stop-info { flex: 1; min-width: 0; }
+
+    .stop-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--cream);
+      margin-bottom: 3px;
+    }
+
+    .stop-date {
+      font-size: 10.5px;
+      font-weight: 300;
+      color: rgba(245,240,232,0.4);
+      letter-spacing: 0.04em;
+    }
+
+    .stop-address {
+      font-size: 10.5px;
+      font-weight: 300;
+      color: rgba(245,240,232,0.35);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .connector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 28px 4px 49px;
+    }
+
+    .connector-line {
+      width: 1px;
+      height: 16px;
+      background: rgba(255,255,255,0.1);
+      margin-left: 11px;
+    }
+
+    .connector-label {
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(245,240,232,0.2);
+    }
+
+    /* ── MAP PANEL ── */
+    .map-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .map-topbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: linear-gradient(to bottom, rgba(245,240,232,0.95) 0%, rgba(245,240,232,0) 100%);
+      pointer-events: none;
+    }
+
+    .active-stop-card {
+      background: white;
+      border-radius: 6px;
+      padding: 10px 16px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+      pointer-events: all;
+      max-width: 340px;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.28s, transform 0.28s;
+    }
+
+    .active-stop-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card-eyebrow {
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .card-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+
+    .card-address {
+      font-size: 11px;
+      color: #888;
+      margin-top: 3px;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 6px;
+      pointer-events: all;
+    }
+
+    .toggle-btn {
+      background: white;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 14px;
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .toggle-btn.active {
+      background: var(--ink);
+      color: var(--cream);
+    }
+
+    .map-frame-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .map-frame-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .map-frame-wrapper .map-layer {
+      position: absolute;
+      inset: 0;
+      transition: opacity 0.3s;
+    }
+
+    .map-frame-wrapper .map-layer.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      position: absolute;
+      bottom: 24px;
+      right: 20px;
+      background: white;
+      border-radius: 6px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10.5px;
+      color: #555;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 700px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        height: 100dvh;
+      }
+      .sidebar {
+        max-height: 45vh;
+        overflow: hidden;
+      }
+      .stops-list {
+        overflow-y: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="trip-eyebrow">Family Trip · Jul 15 – 25, 2026</div>
+      <h1 class="trip-title">Summer<br><em>Trip '26</em></h1>
+      <p class="trip-meta">Vienna · Bad Kleinkirchheim · Puglia · Rome</p>
+    </div>
+
+    <div class="stops-list" id="stopsList"></div>
+  </aside>
+
+  <!-- MAP -->
+  <main class="map-panel">
+    <div class="map-topbar">
+      <div class="active-stop-card" id="activeCard">
+        <div class="card-eyebrow" id="cardEyebrow"></div>
+        <div class="card-name" id="cardName"></div>
+        <div class="card-address" id="cardAddress"></div>
+      </div>
+      <div class="view-toggle">
+        <button class="toggle-btn active" id="btnOverview" onclick="setView('overview')">Overview</button>
+        <button class="toggle-btn" id="btnSelected" onclick="setView('selected')">Selected</button>
+      </div>
+    </div>
+
+    <div class="map-frame-wrapper">
+      <!-- Overview: all stops via Google Maps directions embed -->
+      <div class="map-layer" id="layerOverview">
+        <iframe
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&origin=Am+Stadtpark+1,+1030+Wien,+Austria&destination=Via+del+Monte+della+Farina+36,+00186+Roma,+Italy&waypoints=Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria|Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy&mode=driving&language=en">
+        </iframe>
+      </div>
+      <!-- Selected stop: swapped in dynamically -->
+      <div class="map-layer hidden" id="layerSelected">
+        <iframe id="selectedIframe" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade" src=""></iframe>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#b85c38"></div> Hotel</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6b7c5e"></div> Villa</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c9a84c"></div> Airbnb</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#aaa"></div> Transit</div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  const MAPS_KEY = 'AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY';
+
+  const legs = [
+    {
+      label: 'Austria',
+      stops: [
+        {
+          num: 1,
+          name: 'Vienna International Airport',
+          shortName: 'VIE Arrival',
+          date: 'Jul 15',
+          address: '1300 Schwechat, Austria',
+          type: 'flight',
+          q: 'Vienna+International+Airport,+Austria',
+          note: 'Fly in · Pick up Enterprise car'
+        },
+        {
+          num: 2,
+          name: 'Hilton Vienna Park',
+          shortName: 'Hilton Vienna Park',
+          date: 'Jul 15 – 16',
+          address: 'Am Stadtpark 1, 1030 Wien, Austria',
+          type: 'hotel',
+          q: 'Am+Stadtpark+1,+1030+Wien,+Austria',
+          note: '1 night · 2 rooms'
+        },
+        {
+          num: 3,
+          name: 'Hotel Pulverer',
+          shortName: 'Hotel Pulverer',
+          date: 'Jul 16 – 19',
+          address: 'Thermenstraße 4, 9546 Bad Kleinkirchheim',
+          type: 'hotel',
+          q: 'Thermenstra%C3%9Fe+4,+9546+Bad+Kleinkirchheim,+Austria',
+          note: '3 nights · Emotional heart of the trip'
+        },
+      ]
+    },
+    {
+      label: 'Italy',
+      stops: [
+        {
+          num: 4,
+          name: 'Bari Airport (BRI)',
+          shortName: 'Fly VIE → BRI',
+          date: 'Jul 19',
+          address: 'Viale Enzo Ferrari, 70128 Bari, Italy',
+          type: 'flight',
+          q: 'Bari+International+Airport,+Puglia,+Italy',
+          note: 'Ryanair FR9066 · Pick up Alamo car'
+        },
+        {
+          num: 5,
+          name: 'Casina Menga Villa',
+          shortName: 'Casina Menga',
+          date: 'Jul 19 – 23',
+          address: 'Contrada Bellocchio, 70043 Monopoli, Puglia',
+          type: 'villa',
+          q: 'Contrada+Bellocchio,+70043+Monopoli,+Puglia,+Italy',
+          note: '4 nights · Private villa in Monopoli'
+        },
+        {
+          num: 6,
+          name: 'Residenza Farina',
+          shortName: 'Residenza Farina',
+          date: 'Jul 23 – 25',
+          address: 'Via del Monte della Farina 36, 00186 Roma',
+          type: 'airbnb',
+          q: 'Via+del+Monte+della+Farina+36,+00186+Roma,+Italy',
+          note: '2 nights · Central Rome'
+        },
+        {
+          num: 7,
+          name: 'Fiumicino Airport (FCO)',
+          shortName: 'Fly FCO → ATL',
+          date: 'Jul 25',
+          address: 'Via Pierpaolo Racchetti 1, 00054 Fiumicino',
+          type: 'flight',
+          q: 'Leonardo+da+Vinci+International+Airport,+Fiumicino,+Italy',
+          note: 'DL215 · Return Alamo car'
+        },
+      ]
+    }
+  ];
+
+  let activeStop = null;
+  let currentView = 'overview';
+
+  function buildSidebar() {
+    const list = document.getElementById('stopsList');
+    legs.forEach((leg, li) => {
+      const legEl = document.createElement('div');
+      legEl.className = 'leg';
+      const label = document.createElement('div');
+      label.className = 'leg-label';
+      label.textContent = leg.label;
+      legEl.appendChild(label);
+
+      leg.stops.forEach((stop, si) => {
+        const stopEl = document.createElement('div');
+        stopEl.className = `stop type-${stop.type}`;
+        stopEl.id = `stop-${stop.num}`;
+        stopEl.innerHTML = `
+          <div class="stop-number">${stop.num}</div>
+          <div class="stop-info">
+            <div class="stop-name">${stop.name}</div>
+            <div class="stop-date">${stop.date} &nbsp;·&nbsp; ${stop.note}</div>
+            <div class="stop-address">${stop.address}</div>
+          </div>
+        `;
+        stopEl.addEventListener('click', () => selectStop(stop));
+        legEl.appendChild(stopEl);
+
+        // connector between stops (not after last)
+        const isLastInLeg = si === leg.stops.length - 1;
+        const isLastLeg = li === legs.length - 1;
+        if (!isLastInLeg || !isLastLeg) {
+          const conn = document.createElement('div');
+          conn.className = 'connector-line';
+          conn.style.cssText = 'margin-left:39px; width:1px; height:10px; background:rgba(255,255,255,0.08)';
+          legEl.appendChild(conn);
+        }
+      });
+
+      list.appendChild(legEl);
+    });
+  }
+
+  function selectStop(stop) {
+    // deselect previous
+    document.querySelectorAll('.stop').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById(`stop-${stop.num}`);
+    if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+
+    activeStop = stop;
+
+    // update card
+    const typeLabels = { hotel: 'Hotel', villa: 'Villa', airbnb: 'Airbnb', flight: 'Airport / Transit' };
+    document.getElementById('cardEyebrow').textContent = typeLabels[stop.type] || '';
+    document.getElementById('cardName').textContent = stop.name;
+    document.getElementById('cardAddress').textContent = stop.address;
+    document.getElementById('activeCard').classList.add('visible');
+
+    // load selected iframe
+    const src = `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${stop.q}&language=en`;
+    document.getElementById('selectedIframe').src = src;
+    setView('selected');
+  }
+
+  function setView(view) {
+    currentView = view;
+    document.getElementById('layerOverview').classList.toggle('hidden', view !== 'overview');
+    document.getElementById('layerSelected').classList.toggle('hidden', view !== 'selected');
+    document.getElementById('btnOverview').classList.toggle('active', view === 'overview');
+    document.getElementById('btnSelected').classList.toggle('active', view === 'selected');
+
+    if (view === 'overview') {
+      document.getElementById('activeCard').classList.remove('visible');
+      document.querySelectorAll('.stop').forEach(el => el.classList.remove('active'));
+      activeStop = null;
+    }
+  }
+
+  buildSidebar();
+</script>
+
+</body>
+</html>
